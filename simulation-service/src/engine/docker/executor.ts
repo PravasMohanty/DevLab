@@ -4,7 +4,7 @@ import {
     PullDockerImage,
     ShowDockerImages,
     RunDockerImage,
-    StopDockerImage,
+    StopDockerContainer,
     ShowDockerContainers,
     ShowDockerContainerInfo,
     RemoveDockerContainer
@@ -28,7 +28,7 @@ export const executeDockerCommand = (command: ParsedCommand) => {
             break;
 
         case "stop":
-            StopDockerImage(command.name)
+            StopDockerContainer(command.name)
             break;
 
         case "ps":

@@ -12,7 +12,7 @@ const commandMap: Record<string, string> = {
   inspect: "resource",
 };
 
-const parse = (command: string): ParsedCommand | null => {
+export const parse = (command: string): ParsedCommand | null => {
   const parts = command.trim().split(/\s+/);
 
   const category = parts[0];
