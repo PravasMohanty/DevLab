@@ -1,10 +1,4 @@
-interface ParsedCommand {
-  category: string;
-  action: string;
-  resource: string;
-  name: string;
-  flag: string;
-}
+import ParsedCommand from "../types/ParsedCommand";
 
 const commandMap: Record<string, string> = {
   pull: "resource",
@@ -47,7 +41,7 @@ const parse = (command: string): ParsedCommand | null => {
         ? parts[3]
         : "";
 
-  if(flag){
+  if (flag) {
     name = parts[3] ?? "";
   }
 
