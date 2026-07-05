@@ -26,7 +26,7 @@ export const ShowDockerImages = () => {
     return dockerState.images;
 }
 
-export const RunDockerImage = (imageName: string, flags: string) => {
+export const RunDockerImage = (imageName: string, flags: string[]) => {
     try {
         if (!dockerState.images.find(image => image.name === imageName)) {
             console.log(`Image : ${imageName} not found`);
@@ -70,12 +70,12 @@ export const StopDockerContainer = (containerName: string) => {
     }
 }
 
-export const ShowDockerContainers = (flags: string) => {
+export const ShowDockerContainers = (flags: string[]) => {
     console.log(`Listing Docker containers with flags: ${flags}`);
-    if (flags === "-a") {
+    if (flags.includes("-a")) {
         return dockerState.containers;
     }
-    else if (flags === "-s") {
+    else if (flags.includes("-s")) {
         return dockerState.containers.filter(c => c.status === "stopped");
     }
     return dockerState.containers.filter(c => c.status === "running");

@@ -18,46 +18,34 @@ export const parse = (command: string): ParsedCommand | null => {
   const category = parts[0];
   const action = parts[1];
 
-  if (!category || !action) {
-    return null;
-  }
+  if (!category || !action) return null;
 
-  if (category !== "docker") {
-    return null;
-  }
+  if (category !== "docker") return null;
 
   const resource = commandMap[action];
 
-  if (!resource) {
-    return null;
-  }
+  if (!resource) return null;
 
-  let name = parts[2] ?? "";
+  const args: string[] = [];
+  const flags: string[] = [];
 
-  const flag =
-    parts[2]?.startsWith("-")
-      ? parts[2]
-      : parts[3]?.startsWith("-")
-        ? parts[3]
-        : "";
+  for (let i = 2; i < parts.length; i++) {
+    const part = parts[i];
 
-  if (flag) {
-    name = parts[3] ?? "";
+    if (!part) continue;
+
+    if (part.startsWith("-")) {
+      flags.push(part);
+    } else {
+      args.push(part);
+    }
   }
 
   return {
     category,
     action,
     resource,
-    name,
-    flag,
+    args,
+    flags,
   };
 };
-
-// Testing 
-console.log(parse("docker pull nginx"));
-console.log(parse("docker images"));
-console.log(parse("docker run nginx"));
-console.log(parse("docker stop web"));
-console.log(parse("docker ps -a"));
-console.log(parse("docker run -d nginx"));
