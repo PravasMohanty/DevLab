@@ -1,132 +1,165 @@
+import { generateContainerName } from "../../utils/helpers";
 import { dockerState } from "../state";
 import type { Image, Container } from "../state";
 
-export const PullDockerImage = (imageName: string) => {
-    console.log(`Pulling Docker image: ${imageName}`);
-    try {
-        if (dockerState.images.find(image => image.name === imageName)) {
-            console.log("Requirement already satisfied");
-            return;
-        }
-        const image: Image = {
-            id: Math.random().toString(36).substring(7),
-            name: imageName,
-            tag: "latest"
+import type { ServiceResponse } from "../../types/ServiceResponse";
+
+export const PullDockerImage = (imageName: string): ServiceResponse<Image> => {
+
+    if (dockerState.images.find(image => image.name === imageName)) {
+        return {
+            success: false,
+            message: "Requirement already satisfied"
         };
-        dockerState.images.push(image);
-        console.log(`Image : ${imageName} pulled successfully`);
-        return image;
-    } catch (error) {
-        console.error("Error pulling Docker image:", error);
     }
-}
 
-export const ShowDockerImages = () => {
-    console.log("Listing Docker images");
-    return dockerState.images;
-}
+    const image: Image = {
+        id: Math.random().toString(36).substring(7),
+        name: imageName,
+        tag: "latest"
+    };
 
-export const RunDockerImage = (imageName: string, flags: string[]) => {
-    try {
-        if (!dockerState.images.find(image => image.name === imageName)) {
-            console.log(`Image : ${imageName} not found`);
-            return;
-        }
-        const container: Container = {
-            id: Math.random().toString(36).substring(7),
-            name: imageName,
-            image: imageName,
-            status: "running"
+    dockerState.images.push(image);
+
+    return {
+        success: true,
+        message: `Image '${imageName}' pulled successfully`,
+        data: image
+    };
+};
+
+export const ShowDockerImages = (): ServiceResponse<Image[]> => {
+
+    return {
+        success: true,
+        message: "Images fetched successfully",
+        data: dockerState.images
+    };
+};
+
+export const RunDockerImage = (
+    imageName: string,
+    flags: string[]
+): ServiceResponse<Container> => {
+
+    const image = dockerState.images.find(
+        image => image.name === imageName
+    );
+
+    if (!image) {
+        return {
+            success: false,
+            message: `Image '${imageName}' not found`
         };
-        dockerState.containers.push(container);
-        console.log(`Container : ${imageName} created successfully`);
-        return container;
-    } catch (error) {
-        console.error("Error creating Docker container:", error);
     }
+
+    const container: Container = {
+        id: Math.random().toString(36).substring(7),
+        name: generateContainerName(),
+        image: imageName,
+        status: "running"
+    };
+
+    dockerState.containers.push(container);
+
+    return {
+        success: true,
+        message: `Container '${container.name}' created successfully`,
+        data: container
+    };
 }
 
-export const StopDockerContainer = (containerName: string) => {
-    console.log(`Stopping Docker image: ${containerName}`);
-    try {
-        const container = dockerState.containers.find(
-            container =>
-                container.name === containerName ||
-                container.id === containerName
-        );
+export const StopDockerContainer = (
+    containerName: string
+): ServiceResponse => {
 
-        if (!container) {
-            console.log(`Container not found`);
-            return;
-        }
+    const container = dockerState.containers.find(
+        c => c.name === containerName || c.id === containerName
+    );
 
-
-        container.status = 'stopped'
-        console.log(`Container : ${containerName} stopped successfully`);
-        return;
-
-    } catch (error) {
-        console.error("Error stopping Docker image:", error);
+    if (!container) {
+        return {
+            success: false,
+            message: "Container not found"
+        };
     }
+
+    container.status = "stopped";
+
+    return {
+        success: true,
+        message: `Container '${container.name}' stopped successfully`
+    };
 }
 
-export const ShowDockerContainers = (flags: string[]) => {
-    console.log(`Listing Docker containers with flags: ${flags}`);
+export const ShowDockerContainers = (
+    flags: string[]
+): ServiceResponse<Container[]> => {
+
+    let containers: Container[];
+
     if (flags.includes("-a")) {
-        return dockerState.containers;
+        containers = dockerState.containers;
+    } else if (flags.includes("-s")) {
+        containers = dockerState.containers.filter(
+            c => c.status === "stopped"
+        );
+    } else {
+        containers = dockerState.containers.filter(
+            c => c.status === "running"
+        );
     }
-    else if (flags.includes("-s")) {
-        return dockerState.containers.filter(c => c.status === "stopped");
-    }
-    return dockerState.containers.filter(c => c.status === "running");
 
+    return {
+        success: true,
+        message: "Containers fetched successfully",
+        data: containers
+    };
 }
 
-export const ShowDockerContainerInfo = (containerName: string) => {
-    try {
-        const container = dockerState.containers.find(
-            container =>
-                container.name === containerName ||
-                container.id === containerName
-        );
+export const ShowDockerContainerInfo = (
+    containerName: string
+): ServiceResponse<Container> => {
 
-        if (!container) {
-            console.log(`Container not found`);
-            return;
-        }
+    const container = dockerState.containers.find(
+        c => c.name === containerName || c.id === containerName
+    );
 
-        console.log(`Container : ${containerName} info`);
-        console.log(container);
-        return container;
-    } catch (error) {
-        console.error("Error showing Docker container info:", error);
+    if (!container) {
+        return {
+            success: false,
+            message: "Container not found"
+        };
     }
+
+    return {
+        success: true,
+        message: "Container information fetched successfully",
+        data: container
+    };
 }
 
-export const RemoveDockerContainer = (containerName: string) => {
-    console.log(`Removing Docker container: ${containerName}`);
-    try {
-        const container = dockerState.containers.find(
-            container =>
-                container.name === containerName ||
-                container.id === containerName
-        );
+export const RemoveDockerContainer = (
+    containerName: string
+): ServiceResponse => {
 
-        if (!container) {
-            console.log(`Container not found`);
-            return;
-        }
+    const container = dockerState.containers.find(
+        c => c.name === containerName || c.id === containerName
+    );
 
-        dockerState.containers = dockerState.containers.filter(
-            container =>
-                container.name !== containerName &&
-                container.id !== containerName
-        );
-
-        console.log(`Container ${containerName} removed successfully`);
-        return;
-    } catch (error) {
-        console.error("Error removing Docker container:", error);
+    if (!container) {
+        return {
+            success: false,
+            message: "Container not found"
+        };
     }
-}
 
+    dockerState.containers = dockerState.containers.filter(
+        c => c.name !== containerName && c.id !== containerName
+    );
+
+    return {
+        success: true,
+        message: `Container '${container.name}' removed successfully`
+    };
+}

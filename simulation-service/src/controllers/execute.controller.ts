@@ -1,33 +1,31 @@
-import { Request, Response, NextFunction } from 'express';
-import { SessionManager } from '../sessions/sessionManager.js';
-import { SimulationEngine } from '../engine/simulator.js';
+import { Request, Response } from "express";
+import { parse } from "../engine/parser";
+import { execute } from "../engine/simulator";
 
-export const executeCommand = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { command, sessionId } = req.body;
+export const executeCommand = (req: Request, res: Response) => {
 
-    if (typeof command !== 'string') {
-      res.status(400).json({ error: 'Command must be a string' });
-      return;
-    }
+  const { command } = req.body;
 
-    const activeSessionId = sessionId || 'default-session';
-
-    const sessionState = SessionManager.getInstance().getSession(activeSessionId);
-    const engine = new SimulationEngine(sessionState);
-
-    const result = engine.execute(command);
-
-    res.status(200).json({
-      output: result.output,
-      error: result.error || false,
-      sessionId: activeSessionId,
+  if (!command) {
+    return res.status(400).json({
+      success: false,
+      message: "Command is required"
     });
-  } catch (err) {
-    next(err);
   }
+
+  const parsed = parse(command);
+
+  if (!parsed) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid command"
+    });
+  }
+
+  const result = execute(parsed);
+
+  return res.status(200).json({
+    success: true,
+    result
+  });
 };

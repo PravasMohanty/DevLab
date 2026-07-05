@@ -20,12 +20,10 @@ export const executeDockerCommand = (command: ParsedCommand) => {
                 return;
             }
 
-            PullDockerImage(imageName);
-            break;
+            return PullDockerImage(imageName);
 
         case "images":
-            ShowDockerImages();
-            break;
+            return ShowDockerImages();
 
         case "run":
             const runImageName = command.args[0];
@@ -35,8 +33,7 @@ export const executeDockerCommand = (command: ParsedCommand) => {
                 return;
             }
 
-            RunDockerImage(runImageName, command.flags);
-            break;
+            return RunDockerImage(runImageName, command.flags);
 
         case "stop":
             const stopImageName = command.args[0];
@@ -45,12 +42,10 @@ export const executeDockerCommand = (command: ParsedCommand) => {
                 console.log("Image name is required.");
                 return;
             }
-            StopDockerContainer(stopImageName);
-            break;
+            return StopDockerContainer(stopImageName);
 
         case "ps":
-            ShowDockerContainers(command.flags);
-            break;
+            return ShowDockerContainers(command.flags);
 
         case "inspect":
             const inspectImageName = command.args[0];
@@ -59,8 +54,7 @@ export const executeDockerCommand = (command: ParsedCommand) => {
                 console.log("Image name is required.");
                 return;
             }
-            ShowDockerContainerInfo(inspectImageName);
-            break;
+            return ShowDockerContainerInfo(inspectImageName);
 
         case "rm":
             const rmImageName = command.args[0];
@@ -69,10 +63,12 @@ export const executeDockerCommand = (command: ParsedCommand) => {
                 console.log("Image name is required.");
                 return;
             }
-            RemoveDockerContainer(rmImageName);
-            break;
+            return RemoveDockerContainer(rmImageName);
 
         default:
-            console.log("Invalid command");
+            return {
+                success: false,
+                message: "Invalid command"
+            };
     }
 };
