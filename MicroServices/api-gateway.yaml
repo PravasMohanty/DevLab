@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-deployment
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: api-gateway
+
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+
+    spec:
+      containers:
+      - name: api-gateway
+        image: api-gateway:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: API_GATEWAY_PORT
+        - name: SIMULATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SIMULATION_SERVICE_URL
+        ports:
+        - containerPort: 3500
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: api-gateway
+
+spec:
+  type: NodePort
+
+  selector:
+    app: api-gateway
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3500
+    nodePort: 30121

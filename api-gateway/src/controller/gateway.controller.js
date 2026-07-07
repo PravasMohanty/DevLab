@@ -14,6 +14,10 @@ exports.simulate = async (req, res) => {
 
     catch (err) {
 
+        if (err.response) {
+            return res.status(err.response.status).json(err.response.data);
+        }
+
         res.status(500).json({
 
             success: false,

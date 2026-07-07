@@ -1,38 +1,27 @@
-# ==========================
-# Build Stage
-# ==========================
-FROM node:2-alpine AS builder
+# Stage 1: Build TypeScript
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies)
 RUN npm install
 
-# Copy source code
 COPY . .
 
-# Build TypeScript
 RUN npm run build
 
-# ==========================
-# Production Stage
-# ==========================
-FROM node:2-alpine
+# Stage 2: Production image
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
-# Copy compiled application
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3000
+EXPOSE 4000
 
 CMD ["node", "dist/server.js"]

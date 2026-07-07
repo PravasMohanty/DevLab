@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  SIMULATION_SERVICE_URL: "http://simulation-service:4000"
+  API_GATEWAY_PORT: "3500"
+  SIMULATION_SERVICE_PORT: "4000" 
